@@ -5,13 +5,28 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { Link } from 'react-router-dom';
+import { Formik, Field } from "formik";
+import * as Yup from "yup";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
+const validationSchema = Yup.object({
+  firstname: Yup.string().required("Required"),
+  lastname: Yup.string().required("Required"),
+  email: Yup.string().email("Invalid email address").required("Required"),
+  password: Yup.string()
+  .min(8, "Must be at least 8 characters")
+  .max (15, "Must be 15 characters or less")
+  .required("Required"),
+});
 
 function Copyright(props) {
   return (
@@ -28,15 +43,20 @@ function Copyright(props) {
 
 const theme = createTheme();
 
-export default function Register() {
+
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const jsonData = {
         email: data.get('email'),
         password: data.get('password'),
-        firstname: data.get('firstName'),
-        lastname: data.get('lastName'),
+        firstname: data.get('firstname'),
+        lastname: data.get('lastname'),
+      }
+
+      if(!jsonData.email || !jsonData.password || !jsonData.firstname || !jsonData.lastname){
+        toast.error("Please enter all required fields.");
+        return;
       }
 
   fetch("http://localhost:3000/register", {
@@ -59,7 +79,14 @@ export default function Register() {
       console.error("Error:", error);
     });
 };
+export default function Register() {
   return (
+    <Formik
+    initialValues={{ email: "", password: "" }}
+    validationSchema={validationSchema}
+    onSubmit={handleSubmit}
+  >
+          {({ errors, touched }) => (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
@@ -80,45 +107,55 @@ export default function Register() {
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  autoComplete="given-name"
-                  name="firstName"
-                  required
-                  fullWidth
-                  id="firstName"
-                  label="First Name"
-                  autoFocus
+                <Field
+                    as={TextField}
+                    name="firstname"
+                    label="FirstName"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                  error={touched.lastname && Boolean(errors.lastname)}
+                  helperText={touched.lastname && errors.lastname}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Last Name"
-                  name="lastName"
-                  autoComplete="family-name"
+                <Field
+                    as={TextField}
+                    name="lastname"
+                    label="LastName"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                  error={touched.lastname && Boolean(errors.lastname)}
+                  helperText={touched.lastname && errors.lastname}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
+                <Field
+                    as={TextField}
+                    name="email"
+                    label="Email"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                  error={touched.email && Boolean(errors.email)}
+                  helperText={touched.email && errors.email}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  name="password"
-                  label="Password"
-                  type="password"
-                  id="password"
-                  autoComplete="new-password"
+                <Field
+                    as={TextField}
+                    name="password"
+                    label="Password"
+                    type="text"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                  error={touched.password && Boolean(errors.password)}
+                  helperText={touched.password && errors.password}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -138,15 +175,18 @@ export default function Register() {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link to="/login" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>
             </Grid>
+            <ToastContainer />
           </Box>
         </Box>
         <Copyright sx={{ mt: 5 }} />
       </Container>
     </ThemeProvider>
+    )}
+    </Formik>
   );
 }

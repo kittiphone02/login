@@ -1,7 +1,5 @@
 import React,{ useEffect } from 'react';
-import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
-import CameraIcon from '@mui/icons-material/PhotoCamera';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -10,11 +8,12 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
+import axios from "axios";
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { Link, useNavigate  } from 'react-router-dom';
+// import ResponsiveAppBar from '../components/Header/Header.component.js';
 function Copyright() {
   return (
     <Typography variant="body2" color="text.secondary" align="center">
@@ -33,45 +32,40 @@ const cards = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const theme = createTheme();
 
 export default function Album() {
-    const navigate = useNavigate();
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        fetch("http://localhost:3000/authen", {
-            method: "POST", 
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": "Bearer " +token
-            },
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if(data.status === 'ok'){
-          
-              }else{
-                localStorage.removeItem('token')
-                navigate('/login', { replace: true }); // <-- redirect to home page
-            }
+  const navigate = useNavigate();
 
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-            });
-    }, [])
-    const handleLogout = () => {
-        localStorage.removeItem('token')
-        navigate('/login', { replace: true }); // <-- redirect to home page
-    }
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  axios
+    .post("http://localhost:3000/authen", {}, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then((response) => {
+      if (response.data.status === "ok") {
+        // Do something if authorized
+      } else {
+        localStorage.removeItem("token");
+        navigate("/login", { replace: true }); // <-- redirect to home page
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}, [navigate]);
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/login", { replace: true }); // <-- redirect to home page
+};
   return (
+    
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppBar position="relative">
-        <Toolbar>
-          <CameraIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" color="inherit" noWrap>
-            Album layout
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      {/* <ResponsiveAppBar/> */}
+
       <main>
         {/* Hero unit */}
         <Box
