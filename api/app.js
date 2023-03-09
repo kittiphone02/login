@@ -13,6 +13,7 @@ const userController = require("./controllers/userController");
 app.post("/register", jsonParser, userController.register);
 app.post("/login", jsonParser, userController.login);
 app.post("/authen", jsonParser, userController.authen);
+app.get("/user_detail", jsonParser, userController.user_detail);
 
 // Create connection to database
 const mysql = require("mysql2");

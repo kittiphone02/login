@@ -29,6 +29,45 @@ exports.register = function(req, res, next) {
   });
 };
 
+
+exports.user_detail = function(req, res, next) {
+  try {
+    // Check if Authorization header is present
+    if (!req.headers.authorization) {
+      return res.status(401).json({ status: 'error', message: 'Authorization header missing' });
+    }
+    
+    const token = req.headers.authorization.split(' ')[1];
+    const decoded = jwt.verify(token, secret);
+    const userId = decoded.id;
+
+    connection.execute('SELECT * FROM tbl_users WHERE user = ?', [userId], function(err, rows, fields) {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ status: 'error', message: 'An unexpected error occurred' });
+        return;
+      }
+
+      if (rows.length === 0) {
+        res.status(404).json({ status: 'error', message: 'User not found' });
+      } 
+      if(!err && rows.length > 0) {
+        const user = rows[0];
+        res.json({ status: 'ok', user });
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ status: 'error', message: 'Invalid or expired token' });
+  }
+};
+
+
+
+
+
+
+
 exports.login = function(req, res, next) {
   connection.execute(
     'SELECT * FROM tbl_users WHERE email = ?',
@@ -44,7 +83,7 @@ exports.login = function(req, res, next) {
       }
       bcrypt.compare(req.body.password, tbl_users[0].password, function(err, isLogin) {
         if (isLogin){
-          var token = jwt.sign({ email: tbl_users[0].email,id: tbl_users[0].user_id },  secret, { expiresIn: '1h' });
+          var token = jwt.sign({ email: tbl_users[0].email,id: tbl_users[0].user },  secret, { expiresIn: '1h' });
           res.json({status: 'ok', message: 'login success',token})
         }else{
           res.json({status: 'error', message: 'login failed'})
